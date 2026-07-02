@@ -1,0 +1,37 @@
+YAML
+name: Executar Monitor de Precos
+
+on:
+  schedule:
+    # Define o horário usando a sintaxe Cron. 
+    # '0 12 * * *' significa: Todos os dias às 12:00 UTC (9:00 no horário de Brasília)
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Essa linha permite que você teste e rode o robô manualmente quando quiser!
+
+jobs:
+  rodar-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Copiar os arquivos do repositorio
+      uses: actions/checkout@v3
+
+    - name: Configurar o Python no servidor
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Instalar as ferramentas necessarias
+      run: |
+        pip install requests beautifulsoup4 pandas
+
+    - name: Executar o script Python
+      run: python main.py
+
+    - name: Salvar o historico atualizado de volta no GitHub
+      run: |
+        git config --global user.name "GitHub Actions Bot"
+        git config --global user.email "actions@github.com"
+        git add historico_precos.csv
+        git commit -m "Atualizando historico de precos [Automático]" || echo "Sem mudanças no arquivo"
+        git push
